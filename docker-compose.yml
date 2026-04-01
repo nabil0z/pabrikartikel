@@ -12,6 +12,10 @@ services:
       - ./data:/app/data
       # Folder output artikel lokal (mount ke Astro jika perlu)
       - ./output:/app/output
+      # === MOUNT BLOG ASTRO ===
+      # Lokal Windows: ubah path kiri sesuai lokasi blog
+      # VPS Linux contoh: /home/user/hanyut.com/src/content/posts:/mnt/hanyut-posts
+      - /home/user/artikel/src/content/posts:/mnt/hanyut-posts
     environment:
       - NODE_ENV=production
       - PORT=7171
