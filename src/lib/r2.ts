@@ -40,16 +40,20 @@ export async function pushToAstroLocalPath(
   imageUrl: string,
   categoryId: string = "general"
 ) {
-  // Frontmatter injection
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-  const filePath = path.join(localPath, `${slug}.md`);
+  const filePath = path.join(localPath, `${slug}.mdx`);
   
+  const today = new Date().toISOString().split("T")[0]; // 2026-04-02 format
+
+  // Frontmatter sesuai format Astro hanyut.com
   const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
-date: "${new Date().toISOString()}"
-coverImage: "${imageUrl}"
+description: "${markdownContent.substring(0, 150).replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/#/g, '').trim()}..."
+pubDate: ${today}
+updatedDate: ${today}
 category: "${categoryId}"
 author: "Redaksi"
+tags: ["${categoryId.toLowerCase()}", "${slug.split("-").slice(0, 2).join('", "')}"]
 ---
 
 `;
@@ -61,5 +65,5 @@ author: "Redaksi"
   }
 
   fs.writeFileSync(filePath, finalContent, "utf-8");
-  console.log(`[Push Success] Written to ${filePath}`);
+  console.log(`[Push Success] Written .mdx to ${filePath}`);
 }
