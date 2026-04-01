@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+*.md
+test-*.ts
+test-*.js
+list-models.ts
+error.log
+error.txt
+test_result*.txt
+model_list.txt
+data
+output

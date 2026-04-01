@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
+  serverExternalPackages: ["@prisma/client", "prisma", "better-sqlite3", "@prisma/adapter-better-sqlite3", "node-telegram-bot-api", "node-cron"],
 };
 
 export default nextConfig;

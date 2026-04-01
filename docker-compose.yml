@@ -1,0 +1,35 @@
+services:
+  pabrik-artikel:
+    build: .
+    container_name: pabrik-artikel
+    restart: unless-stopped
+    ports:
+      # Port aneh agar tidak bentrok dengan project lain di VPS
+      # Akses via: http://IP_VPS:7171
+      - "7171:7171"
+    volumes:
+      # Database SQLite persisten (tidak hilang saat rebuild)
+      - ./data:/app/data
+      # Folder output artikel lokal (mount ke Astro jika perlu)
+      - ./output:/app/output
+    environment:
+      - NODE_ENV=production
+      - PORT=7171
+      - DATABASE_URL=file:/app/data/pabrik.db
+      
+      # === API KEYS (Isi dari .env) ===
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_GENERATIVE_AI_API_KEY=${GEMINI_API_KEY}
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      
+      # === TELEGRAM ===
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_MONITOR_GROUP_ID=${TELEGRAM_MONITOR_GROUP_ID}
+      
+      # === CLOUDFLARE R2 ===
+      - CF_ACCOUNT_ID=${CF_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}

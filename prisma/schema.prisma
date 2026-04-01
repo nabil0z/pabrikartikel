@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Tenant {
+  id             String    @id @default(cuid())
+  name           String    // e.g., "Hanyut.com"
+  niche          String    // e.g., "Eco-friendly gadgets"
+  articleTypes   String    @default("Listicle, Tutorial, Review")
+  
+  publishTarget  String    @default("LOCAL") // "LOCAL" or "GITHUB"
+  localPath      String?   // e.g., "C:\Users\62813\Downloads\artikel\src\content\posts"
+  githubRepo     String?   
+  
+  frontmatter    String?   // JSON object template mapped to Astro config
+  postsPerDay    Int       @default(3)
+  autoDiscovery  Boolean   @default(true)
+  language       String    @default("id") // "id" or "en"
+  targetCountry  String    @default("ID") // "ID" for Indonesia, "US" for United States
+  
+  // E-E-A-T & Persona Configs (Custom AI Voices)
+  toneOfVoice         String?
+  targetAudience      String?
+  editorialGuidelines String?
+  writingExample      String?
+  
+  // Telegram Integration
+  telegramTopicId     String?
+  
+  // Custom R2 CDN Domain per-Blog (misal: "https://img.hanyut.com")
+  cdnUrl              String?
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  articles       Article[]
+  events         SeasonalEvent[]
+}
+
+model Article {
+  id             String    @id @default(cuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  keyword        String
+  title          String?
+  outline        String?   
+  content        String?   // Final markdown draft
+  featuredImage  String?   // R2 URL
+  
+  status         String    @default("SCHEDULED") // SCHEDULED, DRAFTING, PENDING_REVIEW, APPROVED, PUBLISHED, FAILED, UPDATING
+  source         String    @default("AUTO")      // AUTO, MANUAL, SEASONAL
+  
+  targetDate     DateTime? // Target publication date
+  publishedAt    DateTime?
+  
+  // Stabilitas Mesin MVP (Error Handling)
+  retryCount     Int       @default(0)
+  errorLog       String?
+
+  // Mesin Penyegar Konten (QDF Content Decay Management)
+  isEvergreen         Boolean   @default(false)
+  lastRefreshedAt     DateTime?
+  isLockedFromRefresh Boolean   @default(false)
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SeasonalEvent {
+  id             String    @id @default(cuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  eventName      String    
+  eventDate      DateTime
+  targetGenDate  DateTime  // Trigger date (e.g. 60 days before)
+  keywords       String?   // JSON array of AI generated keywords
+  isProcessed    Boolean   @default(false) // True if injected to Article queue
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
