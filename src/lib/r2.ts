@@ -14,8 +14,7 @@ const S3 = new S3Client({
 });
 
 // Ukuran gambar optimal untuk SEO & web performance
-const IMAGE_WIDTH = 1200;
-const IMAGE_HEIGHT = 630; // Rasio 1.91:1 (standar Open Graph / Google Discover)
+const IMAGE_WIDTH = 1200; // Max width, tinggi mengikuti rasio asli admin
 
 /**
  * Proses gambar: resize ke 1200x630, convert ke WebP, upload ke R2.
@@ -34,11 +33,8 @@ export async function uploadToR2(rawBuffer: Buffer, filename: string, customCdnD
 
   try {
     processedBuffer = await sharp(rawBuffer)
-      .resize(IMAGE_WIDTH, IMAGE_HEIGHT, { 
-        fit: 'cover',        // Crop ke rasio, tidak stretch
-        position: 'centre',  // Crop dari tengah
-      })
-      .webp({ quality: 85 }) // WebP quality 85 = sweet spot size vs quality
+      .resize({ width: IMAGE_WIDTH, withoutEnlargement: true }) // Max width 1200, rasio asli dipertahankan
+      .webp({ quality: 85 })
       .toBuffer();
 
     finalFilename = filename.replace(/\.\w+$/, '.webp');
