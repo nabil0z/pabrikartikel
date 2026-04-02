@@ -54,11 +54,19 @@ export function AddTenantDialog() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="niche" className="text-right">Niche *</Label>
-              <Input id="niche" name="niche" className="col-span-3" placeholder="Technology & Gadgets" required />
+              <Input id="niche" name="niche" className="col-span-3" placeholder="Blog Umum Indonesia / Teknologi & Gadget" required />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="articleTypes" className="text-right mt-2">Kategori Blog</Label>
+              <Input id="articleTypes" name="articleTypes" className="col-span-3" placeholder="Teknologi, Keuangan, Kesehatan, Gaya Hidup" />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="localPath" className="text-right mt-2">Local Path (VPS)</Label>
+              <Input id="localPath" name="localPath" className="col-span-3" placeholder="/mnt/hanyut-posts" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="telegramTopicId" className="text-right">Telegram Topic ID</Label>
-              <Input id="telegramTopicId" name="telegramTopicId" className="col-span-3" placeholder="e.g. 192837" />
+              <Input id="telegramTopicId" name="telegramTopicId" className="col-span-3" placeholder="e.g. 2" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="cdnUrl" className="text-right">Custom CDN URL</Label>

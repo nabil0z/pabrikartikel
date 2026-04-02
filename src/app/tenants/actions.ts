@@ -13,6 +13,9 @@ export async function addTenantAction(formData: FormData) {
   const telegramTopicId = formData.get("telegramTopicId") as string;
   const cdnUrl = formData.get("cdnUrl") as string;
 
+  const articleTypes = formData.get("articleTypes") as string;
+  const localPath = formData.get("localPath") as string;
+
   if (!name || !niche) {
     throw new Error("Name and Niche are required.");
   }
@@ -21,6 +24,8 @@ export async function addTenantAction(formData: FormData) {
     data: {
       name,
       niche,
+      articleTypes: articleTypes || "General",
+      localPath: localPath || null,
       toneOfVoice: toneOfVoice || null,
       targetAudience: targetAudience || null,
       editorialGuidelines: editorialGuidelines || null,
