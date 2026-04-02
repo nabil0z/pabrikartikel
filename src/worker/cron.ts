@@ -42,7 +42,7 @@ export async function processArticleQueue() {
     const outline = await draftWithClaude(
       article.keyword,
       facts,
-      { niche: tenant.niche, toneOfVoice: tenant.toneOfVoice, editorialGuidelines: tenant.editorialGuidelines }
+      { niche: tenant.niche, toneOfVoice: tenant.toneOfVoice, editorialGuidelines: tenant.editorialGuidelines, articleTypes: tenant.articleTypes }
     );
 
     // 3. Tulis Teks Utuh Markdown (Gemini)
@@ -53,11 +53,12 @@ export async function processArticleQueue() {
       { writingExample: tenant.writingExample, toneOfVoice: tenant.toneOfVoice }
     );
 
-    // 4. Update Database
+    // 4. Update Database (simpan outline JSON agar category bisa dipakai saat export .mdx)
     await prisma.article.update({
       where: { id: article.id },
       data: { 
         content: mdxContent,
+        outline: JSON.stringify(outline),
         status: "PENDING_REVIEW",
         errorLog: null // Hapus error sisa.
       }

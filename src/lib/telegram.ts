@@ -87,9 +87,18 @@ export async function handleTelegramReply(msg: TelegramBot.Message) {
       const h1Match = article.content.match(/^#\s+(.*)/m);
       const title = h1Match ? h1Match[1] : article.keyword;
 
+      // Ekstrak category dari outline JSON yang disimpan Claude
+      let category = article.tenant.niche;
+      if (article.outline) {
+        try {
+          const outlineData = JSON.parse(article.outline);
+          if (outlineData.category) category = outlineData.category;
+        } catch {}
+      }
+
       // 1. Ekspor file MDX ke Astro localPath
       if (article.tenant.localPath) {
-        await pushToAstroLocalPath(article.tenant.localPath, title, article.content, imageUrl, article.tenant.niche);
+        await pushToAstroLocalPath(article.tenant.localPath, title, article.content, imageUrl, category);
       }
 
       // 2. Tandai sukses di DB

@@ -13,6 +13,7 @@ const geminiModel = google('gemini-3-flash-preview');
 // Schema for Claude's Outline Output
 const outlineSchema = z.object({
   seoTitle: z.string().describe("Judul memikat bergaya internasional dengan click-through rate tinggi"),
+  category: z.string().describe("Kategori blog yang paling cocok untuk artikel ini, pilih dari daftar kategori yang diberikan"),
   sections: z.array(z.object({
     heading: z.string().describe("Judul H2 atau H3"),
     instructions: z.string().describe("Instruksi spesifik poin apa saja yang harus dibahas di paragraf ini untuk draf"),
@@ -22,19 +23,24 @@ const outlineSchema = z.object({
 export async function draftWithClaude(
   keyword: string, 
   serpFacts: string[], 
-  tenantConfig: { niche: string, toneOfVoice?: string|null, editorialGuidelines?: string|null }
+  tenantConfig: { niche: string, toneOfVoice?: string|null, editorialGuidelines?: string|null, articleTypes?: string|null }
 ) {
   
+  const categories = tenantConfig.articleTypes || "General";
+
   const systemPrompt = `
 You are the Chief Editor for a top-tier publishing site. Niche: ${tenantConfig.niche}.
 Tone: ${tenantConfig.toneOfVoice || "Profesional, mendalam, namun mudah dicerna"}.
 Editorial Guidelines: ${tenantConfig.editorialGuidelines || "Tidak ada, tulis secara netral."}
 
+Available Blog Categories: [${categories}]
+You MUST pick exactly one category from the list above for the "category" field.
+
 Your task is to create an outline for the keyword: "${keyword}".
 Base your outline entirely on these SERP Facts (Do not hallucinate facts):
 ${serpFacts.join('\n\n')}
 
-Create a compelling title and logical H2/H3 headings. Provide specific instructions for each section so that a junior writer can execute it flawlessly.
+Create a compelling title, pick the most fitting category, and create logical H2/H3 headings. Provide specific instructions for each section so that a junior writer can execute it flawlessly.
   `;
 
   const { object } = await generateObject({
