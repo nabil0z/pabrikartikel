@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { prisma } from "./prisma";
 import { uploadToR2, pushToAstroLocalPath } from "./r2";
+import { submitUrlForIndexing, buildArticleUrl } from "./indexing";
 
 const token = process.env.TELEGRAM_BOT_TOKEN || "";
 let bot: TelegramBot | null = null;
@@ -110,10 +111,16 @@ export async function handleTelegramReply(msg: TelegramBot.Message) {
           status: "PUBLISHED",
           featuredImage: imageUrl,
           publishedAt: new Date(),
+          isEvergreen: true, // Default evergreen agar bisa di-refresh nanti
         }
       });
 
-      bot.sendMessage(msg.chat.id, "🎉 <b>PUBLISHED!</b> Artikel telah dikirim ke web.", { 
+      // 3. Auto-submit ke Google Indexing API
+      const articleUrl = buildArticleUrl(article.tenant.name, title);
+      const indexResult = await submitUrlForIndexing(articleUrl);
+      const indexStatus = indexResult.success ? "✅ Google Indexing: Submitted" : "⚠️ Indexing: Skip (no credentials)";
+
+      bot.sendMessage(msg.chat.id, `🎉 <b>PUBLISHED!</b> Artikel telah dikirim ke web.\n${indexStatus}`, { 
         parse_mode: "HTML",
         reply_to_message_id: msg.message_id,
         message_thread_id: msg.message_thread_id 

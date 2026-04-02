@@ -5,15 +5,24 @@ export async function register() {
     // Setup Cron Jobs
     const cron = await import('node-cron');
     const { processArticleQueue } = await import('./worker/cron');
+    const { processRefreshQueue } = await import('./worker/refresh');
     const { getBot, handleTelegramReply } = await import('./lib/telegram');
 
     // Menjalankan queue runner setiap 15 menit
-    // ("*/15 * * * *")
     cron.default.schedule('*/15 * * * *', async () => {
       try {
         await processArticleQueue();
       } catch (e: any) {
         console.error("[Fatal Cron Error]", e.message);
+      }
+    });
+
+    // Content Freshness Monitor — setiap 6 jam cek artikel usang
+    cron.default.schedule('0 */6 * * *', async () => {
+      try {
+        await processRefreshQueue();
+      } catch (e: any) {
+        console.error("[Fatal Refresh Error]", e.message);
       }
     });
 
