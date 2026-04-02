@@ -50,7 +50,7 @@ export async function processArticleQueue() {
     const mdxContent = await expandWithGemini(
       article.keyword, 
       outline,
-      { writingExample: tenant.writingExample, toneOfVoice: tenant.toneOfVoice }
+      { writingExample: tenant.writingExample, toneOfVoice: tenant.toneOfVoice, tenantId: tenant.id }
     );
 
     // 4. Update Database (simpan outline JSON agar category bisa dipakai saat export .mdx)

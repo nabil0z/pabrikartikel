@@ -38,17 +38,22 @@ export async function pushToAstroLocalPath(
   title: string, 
   markdownContent: string, 
   imageUrl: string,
-  categoryId: string = "general"
+  categoryId: string = "general",
+  metaDescription?: string
 ) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
   const filePath = path.join(localPath, `${slug}.mdx`);
   
-  const today = new Date().toISOString().split("T")[0]; // 2026-04-02 format
+  const today = new Date().toISOString().split("T")[0];
 
-  // Frontmatter sesuai format Astro hanyut.com
+  // Gunakan metaDescription dari Claude jika ada, fallback ke auto-truncate
+  const description = metaDescription 
+    ? metaDescription.replace(/"/g, '\\"')
+    : markdownContent.substring(0, 150).replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/#/g, '').trim() + "...";
+
   const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
-description: "${markdownContent.substring(0, 150).replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/#/g, '').trim()}..."
+description: "${description}"
 pubDate: ${today}
 updatedDate: ${today}
 category: "${categoryId}"
