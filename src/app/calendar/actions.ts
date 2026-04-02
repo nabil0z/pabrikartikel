@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { checkDuplicateKeyword } from "@/lib/duplicate-guard";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { generateObject } from "ai";
 import { z } from "zod";
@@ -90,11 +91,9 @@ export async function approveKeyword(formData: FormData) {
 
   if (!eventId || !keyword || !tenantId) return;
 
-  // Cek apakah keyword sudah ada di antrean (avoid duplicate)
-  const existing = await prisma.article.findFirst({
-    where: { keyword, tenantId }
-  });
-  if (existing) return;
+  // Duplicate Guard: Cek cannibalization per tenant
+  const dupCheck = await checkDuplicateKeyword(keyword, tenantId);
+  if (dupCheck.isDuplicate) return;
 
   await prisma.article.create({
     data: {
@@ -145,10 +144,8 @@ export async function approveAllKeywords(formData: FormData) {
   const suggestions: string[] = data.suggestions || [];
 
   for (const keyword of suggestions) {
-    const existing = await prisma.article.findFirst({
-      where: { keyword, tenantId }
-    });
-    if (existing) continue;
+    const existing = await checkDuplicateKeyword(keyword, tenantId);
+    if (existing.isDuplicate) continue;
 
     await prisma.article.create({
       data: {

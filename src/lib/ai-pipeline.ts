@@ -23,7 +23,6 @@ const outlineSchema = z.object({
     heading: z.string().describe("Judul H2 bergaya natural, hindari pola 'Apa itu X', gunakan variasi menarik"),
     instructions: z.string().describe("Instruksi detail: poin utama, data/statistik yang harus disertakan, angle unik"),
     estimatedWords: z.number().describe("Estimasi jumlah kata ideal untuk section ini (minimal 200)"),
-    imageSuggestion: z.string().optional().describe("Deskripsi foto yang cocok untuk section ini, kosongkan jika tidak perlu gambar"),
   })),
   faqItems: z.array(z.object({
     question: z.string().describe("Pertanyaan FAQ berbasis People Also Ask data"),
@@ -96,7 +95,7 @@ export async function expandWithGemini(
 ) {
   const lang = tenantConfig.language === "en" ? "English" : "Bahasa Indonesia";
   
-  // === Internal Linking: Ambil artikel PUBLISHED dari tenant yang sama ===
+  // === Internal Linking: Ambil artikel PUBLISHED yang paling RELEVAN dari tenant yang sama ===
   let internalLinksInstruction = "";
   if (tenantConfig.tenantId) {
     try {
@@ -106,24 +105,46 @@ export async function expandWithGemini(
           status: "PUBLISHED",
         },
         select: { title: true, keyword: true },
-        take: 20, // Ambil 20 artikel terbaru
-        orderBy: { publishedAt: "desc" },
       });
 
       if (publishedArticles.length > 0) {
-        const linkList = publishedArticles.map((a: { title: string | null; keyword: string }) => {
-          const slug = (a.title || a.keyword).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-          return `- [${a.title || a.keyword}](/${slug})`;
-        }).join("\n");
+        // Ranking berdasarkan relevansi keyword (word overlap scoring)
+        const currentWords = new Set(
+          keyword.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 2)
+        );
 
-        internalLinksInstruction = `
+        const scored = publishedArticles
+          .map((a: { title: string | null; keyword: string }) => {
+            const articleWords = (a.keyword || "").toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 2);
+            let overlap = 0;
+            for (const word of articleWords) {
+              if (currentWords.has(word)) overlap++;
+            }
+            // Skor = jumlah kata overlap / total kata unik di kedua keyword
+            const totalUnique = new Set([...currentWords, ...articleWords]).size;
+            const score = totalUnique > 0 ? overlap / totalUnique : 0;
+            return { ...a, score };
+          })
+          .filter(a => a.score > 0 && a.score < 0.8) // >0 = ada relevansi, <0.8 = bukan duplikat
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 10); // Ambil 10 artikel paling relevan
+
+        if (scored.length > 0) {
+          const linkList = scored.map(a => {
+            const slug = (a.title || a.keyword).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+            return `- [${a.title || a.keyword}](/${slug}) (relevansi: ${Math.round(a.score * 100)}%)`;
+          }).join("\n");
+
+          internalLinksInstruction = `
 INTERNAL LINKING WAJIB:
 Sisipkan 2-4 internal link ke artikel lain yang RELEVAN secara natural dalam paragraf (bukan di akhir).
 Gunakan format markdown link. Hanya link ke artikel yang topiknya benar-benar relevan.
+Prioritaskan artikel dengan relevansi tertinggi.
 
-Artikel yang tersedia untuk di-link:
+Artikel yang tersedia untuk di-link (diurutkan dari paling relevan):
 ${linkList}
 `;
+        }
       }
     } catch (e) {
       // Silently skip if DB query fails

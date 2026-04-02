@@ -65,7 +65,8 @@ export async function pushToAstroLocalPath(
   markdownContent: string, 
   imageUrl: string,
   categoryId: string = "general",
-  metaDescription?: string
+  metaDescription?: string,
+  authorName: string = "Redaksi"
 ) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
   const filePath = path.join(localPath, `${slug}.mdx`);
@@ -80,10 +81,11 @@ export async function pushToAstroLocalPath(
   const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
 description: "${description}"
+heroImage: "${imageUrl}"
 pubDate: ${today}
 updatedDate: ${today}
 category: "${categoryId}"
-author: "Redaksi"
+author: "${authorName.replace(/"/g, '\\"')}"
 tags: ["${categoryId.toLowerCase()}", "${slug.split("-").slice(0, 2).join('", "')}"]
 ---
 

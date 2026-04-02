@@ -50,6 +50,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=builder /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
+COPY --from=builder /app/node_modules/google-trends-api ./node_modules/google-trends-api
 
 # Ensure data directory is writable
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data

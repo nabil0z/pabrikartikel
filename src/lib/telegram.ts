@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { prisma } from "./prisma";
 import { uploadToR2, pushToAstroLocalPath } from "./r2";
+import { pushToGitHub, buildGitHubFilePath } from "./github";
 import { submitUrlForIndexing, buildArticleUrl } from "./indexing";
 
 const token = process.env.TELEGRAM_BOT_TOKEN || "";
@@ -24,27 +25,13 @@ export async function sendReviewNotification(
 ) {
   if (!bot) return;
 
-  // Parse image suggestions dari outline
-  let imageSuggestions = "";
+  // Parse thumbnail suggestion dari outline
+  let thumbnailHint = "";
   if (outlineJson) {
     try {
       const outline = JSON.parse(outlineJson);
-      const suggestions: string[] = [];
-      
       if (outline.thumbnailSuggestion) {
-        suggestions.push(`📸 <b>Thumbnail:</b> ${outline.thumbnailSuggestion}`);
-      }
-
-      if (outline.sections) {
-        outline.sections.forEach((s: any) => {
-          if (s.imageSuggestion) {
-            suggestions.push(`🖼 <b>${s.heading.replace(/^#+\s*/, '')}:</b> ${s.imageSuggestion}`);
-          }
-        });
-      }
-
-      if (suggestions.length > 0) {
-        imageSuggestions = `\n\n📷 <b>Saran Gambar dari AI:</b>\n${suggestions.join('\n')}\n\n<i>Ukuran ideal: 1200×630px (landscape)</i>`;
+        thumbnailHint = `\n\n📸 <b>Saran Thumbnail:</b> ${outline.thumbnailSuggestion}`;
       }
     } catch {}
   }
@@ -56,7 +43,7 @@ export async function sendReviewNotification(
 
 <i>Preview:</i>
 ${previewText.substring(0, 300)}...
-${imageSuggestions}
+${thumbnailHint}
 👉 <b>Cara Publish:</b> <i>Reply</i> pesan ini dengan <b>Foto Thumbnail</b> (1200×630px, landscape), maka artikel akan langsung go-live!
 `;
 
@@ -125,9 +112,35 @@ export async function handleTelegramReply(msg: TelegramBot.Message) {
         } catch {}
       }
 
-      // 1. Ekspor file MDX ke Astro localPath
-      if (article.tenant.localPath) {
-        await pushToAstroLocalPath(article.tenant.localPath, title, article.content, imageUrl, category, metaDescription);
+      // 1. Ekspor file MDX
+      const publishTarget = article.tenant.publishTarget || "LOCAL";
+      
+      if (publishTarget === "LOCAL" && article.tenant.localPath) {
+        // Push ke folder lokal (VPS)
+        const authorName = typeof article.tenant.authorName === 'string' ? article.tenant.authorName : "Redaksi";
+        await pushToAstroLocalPath(article.tenant.localPath, title, article.content, imageUrl, category, metaDescription, authorName);
+      }
+      
+      if (publishTarget === "GITHUB" && article.tenant.githubRepo) {
+        // Push ke GitHub repository
+        const ghFilePath = buildGitHubFilePath(title, article.tenant.localPath || undefined);
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+        const today = new Date().toISOString().split("T")[0];
+        const description = metaDescription || article.content.substring(0, 150).replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/#/g, '').trim() + "...";
+        const authorName = typeof article.tenant.authorName === 'string' ? article.tenant.authorName : "Redaksi";
+        
+        const frontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ndescription: "${description}"\nheroImage: "${imageUrl}"\npubDate: ${today}\nupdatedDate: ${today}\ncategory: "${category}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ntags: ["${category.toLowerCase()}", "${slug.split("-").slice(0, 2).join('", "')}"]\n---\n\n`;
+        const fullContent = frontmatter + article.content;
+        
+        const ghResult = await pushToGitHub(
+          article.tenant.githubRepo,
+          ghFilePath,
+          fullContent,
+          `📝 New article: ${title}`
+        );
+        if (!ghResult.success) {
+          console.warn(`[Telegram] GitHub push failed: ${ghResult.message}`);
+        }
       }
 
       // 2. Tandai sukses di DB

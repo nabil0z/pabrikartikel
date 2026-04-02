@@ -28,9 +28,9 @@ export function ArticleFilters() {
     });
   };
 
-  const handleStatus = (status: string) => {
+  const handleStatus = (status: string | null) => {
     const params = new URLSearchParams(searchParams);
-    if (status !== "ALL") {
+    if (status && status !== "ALL") {
       params.set("status", status);
     } else {
       params.delete("status");
@@ -56,7 +56,7 @@ export function ArticleFilters() {
       <div className="w-[180px]">
         <Select 
           defaultValue={searchParams.get("status")?.toString() || "ALL"} 
-          onValueChange={handleStatus}
+          onValueChange={(value) => handleStatus(value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Filter Status" />

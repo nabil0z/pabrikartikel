@@ -12,11 +12,16 @@ export async function addTenantAction(formData: FormData) {
   const writingExample = formData.get("writingExample") as string;
   const telegramTopicId = formData.get("telegramTopicId") as string;
   const cdnUrl = formData.get("cdnUrl") as string;
+  const postsPerDay = parseInt(formData.get("postsPerDay") as string) || 3;
 
   const articleTypes = formData.get("articleTypes") as string;
   const localPath = formData.get("localPath") as string;
+  const authorName = formData.get("authorName") as string;
+  const publishTarget = formData.get("publishTarget") as string;
+  const githubRepo = formData.get("githubRepo") as string;
   const language = formData.get("language") as string;
   const targetCountry = formData.get("targetCountry") as string;
+  const autoDiscovery = formData.get("autoDiscovery") === "on";
 
   if (!name || !niche) {
     throw new Error("Name and Niche are required.");
@@ -26,8 +31,11 @@ export async function addTenantAction(formData: FormData) {
     data: {
       name,
       niche,
+      authorName: authorName || "Redaksi",
       articleTypes: articleTypes || "General",
+      publishTarget: publishTarget || "LOCAL",
       localPath: localPath || null,
+      githubRepo: githubRepo || null,
       language: language || "id",
       targetCountry: targetCountry || "ID",
       toneOfVoice: toneOfVoice || null,
@@ -36,6 +44,8 @@ export async function addTenantAction(formData: FormData) {
       writingExample: writingExample || null,
       telegramTopicId: telegramTopicId || null,
       cdnUrl: cdnUrl || null,
+      postsPerDay,
+      autoDiscovery,
     },
   });
 

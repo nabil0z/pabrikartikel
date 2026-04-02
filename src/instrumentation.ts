@@ -6,6 +6,7 @@ export async function register() {
     const cron = await import('node-cron');
     const { processArticleQueue } = await import('./worker/cron');
     const { processRefreshQueue } = await import('./worker/refresh');
+    const { processAutoDiscovery } = await import('./worker/discovery');
     const { getBot, handleTelegramReply } = await import('./lib/telegram');
 
     // Menjalankan queue runner setiap 15 menit
@@ -23,6 +24,15 @@ export async function register() {
         await processRefreshQueue();
       } catch (e: any) {
         console.error("[Fatal Refresh Error]", e.message);
+      }
+    });
+
+    // Auto-Discovery — setiap hari jam 6 pagi cari keyword trending
+    cron.default.schedule('0 6 * * *', async () => {
+      try {
+        await processAutoDiscovery();
+      } catch (e: any) {
+        console.error("[Fatal Discovery Error]", e.message);
       }
     });
 

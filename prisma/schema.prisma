@@ -21,6 +21,7 @@ model Tenant {
   autoDiscovery  Boolean   @default(true)
   language       String    @default("id") // "id" or "en"
   targetCountry  String    @default("ID") // "ID" for Indonesia, "US" for United States
+  authorName     String    @default("Redaksi") // Custom author name in frontmatter
   
   // E-E-A-T & Persona Configs (Custom AI Voices)
   toneOfVoice         String?

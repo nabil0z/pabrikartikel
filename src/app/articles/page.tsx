@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ArticleFilters } from "@/components/articles/ArticleFilters";
+import { AddKeywordDialog } from "@/components/articles/AddKeywordDialog";
 import {
   Table,
   TableBody,
@@ -28,12 +29,18 @@ export default async function ArticlesPage({
   }
 
   // Fetch from DB using Prisma
-  const articles = await prisma.article.findMany({
-    where: whereClause,
-    orderBy: { targetDate: "asc" },
-    include: { tenant: true },
-    take: 50, // Limit 50 for MVP speed
-  });
+  const [articles, tenants] = await Promise.all([
+    prisma.article.findMany({
+      where: whereClause,
+      orderBy: { targetDate: "asc" },
+      include: { tenant: true },
+      take: 50,
+    }),
+    prisma.tenant.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -47,11 +54,12 @@ export default async function ArticlesPage({
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2 mb-2">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Article Queue</h2>
           <p className="text-muted-foreground">Monitor the multi-pass AI generation pipeline & SERP scraping status.</p>
         </div>
+        <AddKeywordDialog tenants={tenants} />
       </div>
 
       <ArticleFilters />

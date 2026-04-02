@@ -8,19 +8,30 @@ const RETRY_LIMIT = 3;
 export async function processArticleQueue() {
   console.log(`[Queue Cron] Checking for SCHEDULED articles...`);
   
-  // Ambil 1 artikel yang jadwalnya sudah lewat atau hari ini, dan belum gagal total.
+  // Hitung awal hari ini (UTC) untuk pembatasan harian
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  // Cari tenant yang sudah melebihi kuota hari ini
+  const tenantsOverQuota = await getTenantsOverDailyQuota(todayStart);
+  
+  // Ambil 1 artikel yang jadwalnya sudah lewat, belum gagal total, 
+  // DAN tenant-nya belum melebihi kuota harian.
   const article = await prisma.article.findFirst({
     where: {
       status: "SCHEDULED",
       targetDate: { lte: new Date() },
-      retryCount: { lt: RETRY_LIMIT }
+      retryCount: { lt: RETRY_LIMIT },
+      ...(tenantsOverQuota.length > 0 ? { tenantId: { notIn: tenantsOverQuota } } : {}),
     },
     include: { tenant: true }
   });
 
   if (!article) {
-    return; // Tidak ada antrean.
+    return; // Tidak ada antrean, atau semua tenant sudah mencapai kuota harian.
   }
+  
+  console.log(`[Queue Cron] Tenant "${article.tenant.name}" limit: ${article.tenant.postsPerDay}/day`);
 
   console.log(`[Queue Cron] Processing ID: ${article.id} | Keyword: ${article.keyword}`);
 
@@ -81,4 +92,34 @@ export async function processArticleQueue() {
       }
     });
   }
+}
+
+/**
+ * Cari tenant yang sudah melebihi kuota harian (postsPerDay).
+ * Menghitung artikel yang status-nya DRAFTING, PENDING_REVIEW, atau PUBLISHED hari ini.
+ */
+async function getTenantsOverDailyQuota(todayStart: Date): Promise<string[]> {
+  // Ambil semua tenant beserta batas hariannya
+  const tenants = await prisma.tenant.findMany({
+    select: { id: true, postsPerDay: true }
+  });
+
+  const overQuota: string[] = [];
+
+  for (const tenant of tenants) {
+    const todayCount = await prisma.article.count({
+      where: {
+        tenantId: tenant.id,
+        status: { in: ["DRAFTING", "PENDING_REVIEW", "PUBLISHED", "APPROVED"] },
+        updatedAt: { gte: todayStart },
+      }
+    });
+
+    if (todayCount >= tenant.postsPerDay) {
+      console.log(`[Queue Cron] ⏸️ Tenant "${tenant.id}" sudah ${todayCount}/${tenant.postsPerDay} artikel hari ini — SKIP`);
+      overQuota.push(tenant.id);
+    }
+  }
+
+  return overQuota;
 }
