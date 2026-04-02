@@ -19,9 +19,35 @@ export async function sendReviewNotification(
   messageThreadId: string | undefined, 
   articleId: string, 
   title: string, 
-  previewText: string
+  previewText: string,
+  outlineJson?: string
 ) {
   if (!bot) return;
+
+  // Parse image suggestions dari outline
+  let imageSuggestions = "";
+  if (outlineJson) {
+    try {
+      const outline = JSON.parse(outlineJson);
+      const suggestions: string[] = [];
+      
+      if (outline.thumbnailSuggestion) {
+        suggestions.push(`📸 <b>Thumbnail:</b> ${outline.thumbnailSuggestion}`);
+      }
+
+      if (outline.sections) {
+        outline.sections.forEach((s: any) => {
+          if (s.imageSuggestion) {
+            suggestions.push(`🖼 <b>${s.heading.replace(/^#+\s*/, '')}:</b> ${s.imageSuggestion}`);
+          }
+        });
+      }
+
+      if (suggestions.length > 0) {
+        imageSuggestions = `\n\n📷 <b>Saran Gambar dari AI:</b>\n${suggestions.join('\n')}\n\n<i>Ukuran ideal: 1200×630px (landscape)</i>`;
+      }
+    } catch {}
+  }
 
   const text = `
 ✅ <b>Draf Selesai!</b>
@@ -30,8 +56,8 @@ export async function sendReviewNotification(
 
 <i>Preview:</i>
 ${previewText.substring(0, 300)}...
-
-👉 <b>Cara Publish:</b> <i>Reply</i> pesan ini dengan <b>Foto/Gambar Thumbnail</b>, maka artikel akan langsung go-live!
+${imageSuggestions}
+👉 <b>Cara Publish:</b> <i>Reply</i> pesan ini dengan <b>Foto Thumbnail</b> (1200×630px, landscape), maka artikel akan langsung go-live!
 `;
 
   try {

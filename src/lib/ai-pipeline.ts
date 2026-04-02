@@ -18,10 +18,12 @@ const outlineSchema = z.object({
   seoTitle: z.string().describe("Judul SEO memikat, 50-60 karakter, mengandung keyword utama di awal"),
   metaDescription: z.string().describe("Meta description 150-160 karakter yang memikat klik, mengandung keyword dan CTA implisit"),
   category: z.string().describe("Kategori blog yang paling cocok, pilih dari daftar yang diberikan"),
+  thumbnailSuggestion: z.string().describe("Deskripsi spesifik foto/gambar yang ideal untuk thumbnail artikel, misal: 'Close-up tangan memegang smartphone dengan layar menampilkan grafik saham'"),
   sections: z.array(z.object({
     heading: z.string().describe("Judul H2 bergaya natural, hindari pola 'Apa itu X', gunakan variasi menarik"),
     instructions: z.string().describe("Instruksi detail: poin utama, data/statistik yang harus disertakan, angle unik"),
     estimatedWords: z.number().describe("Estimasi jumlah kata ideal untuk section ini (minimal 200)"),
+    imageSuggestion: z.string().optional().describe("Deskripsi foto yang cocok untuk section ini, kosongkan jika tidak perlu gambar"),
   })),
   faqItems: z.array(z.object({
     question: z.string().describe("Pertanyaan FAQ berbasis People Also Ask data"),

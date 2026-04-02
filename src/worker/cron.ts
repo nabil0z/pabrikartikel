@@ -67,7 +67,7 @@ export async function processArticleQueue() {
     // 5. Lempar notifikasi ke Grup Telegram agar Admin tahu
     console.log(`[Queue Cron] Sending Telegram review ping...`);
     const chatId = process.env.TELEGRAM_MONITOR_GROUP_ID || "";
-    await sendReviewNotification(chatId, tenant.telegramTopicId || undefined, article.id, outline.seoTitle, mdxContent);
+    await sendReviewNotification(chatId, tenant.telegramTopicId || undefined, article.id, outline.seoTitle, mdxContent, JSON.stringify(outline));
 
   } catch (error: any) {
     console.error(`[Queue Cron] Error on ID: ${article.id}:`, error.message);

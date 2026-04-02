@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import sharp from "sharp";
 import fs from "fs";
 import path from "path";
 
@@ -12,25 +13,54 @@ const S3 = new S3Client({
   },
 });
 
-export async function uploadToR2(buffer: Buffer, filename: string, customCdnDomain?: string): Promise<string> {
+// Ukuran gambar optimal untuk SEO & web performance
+const IMAGE_WIDTH = 1200;
+const IMAGE_HEIGHT = 630; // Rasio 1.91:1 (standar Open Graph / Google Discover)
+
+/**
+ * Proses gambar: resize ke 1200x630, convert ke WebP, upload ke R2.
+ * WebP 40-60% lebih kecil dari JPEG → page speed lebih cepat → ranking naik.
+ */
+export async function uploadToR2(rawBuffer: Buffer, filename: string, customCdnDomain?: string): Promise<string> {
   if (!process.env.CF_ACCOUNT_ID || !process.env.R2_BUCKET_NAME) {
     console.warn("R2 credentials missing, skipping actual R2 upload. Returning mock URL.");
     const base = customCdnDomain || "https://mock.cdn.com";
-    return `${base.replace(/\/$/, '')}/${filename}`;
+    return `${base.replace(/\/$/, '')}/${filename.replace(/\.\w+$/, '.webp')}`;
+  }
+
+  // Auto-resize + convert ke WebP
+  let processedBuffer: Buffer;
+  let finalFilename: string;
+
+  try {
+    processedBuffer = await sharp(rawBuffer)
+      .resize(IMAGE_WIDTH, IMAGE_HEIGHT, { 
+        fit: 'cover',        // Crop ke rasio, tidak stretch
+        position: 'centre',  // Crop dari tengah
+      })
+      .webp({ quality: 85 }) // WebP quality 85 = sweet spot size vs quality
+      .toBuffer();
+
+    finalFilename = filename.replace(/\.\w+$/, '.webp');
+    console.log(`[R2] Image processed: ${rawBuffer.length} bytes → ${processedBuffer.length} bytes (WebP)`);
+  } catch (err) {
+    // Fallback: upload as-is jika sharp gagal
+    console.warn("[R2] Sharp processing failed, uploading original");
+    processedBuffer = rawBuffer;
+    finalFilename = filename;
   }
 
   const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME,
-    Key: filename,
-    Body: buffer,
-    ContentType: "image/jpeg",
+    Key: finalFilename,
+    Body: processedBuffer,
+    ContentType: finalFilename.endsWith('.webp') ? "image/webp" : "image/jpeg",
   });
 
   await S3.send(command);
   
-  // Gunakan Custom CDN Domain milik Tenant, jika kosong fallback ke `.env` utama
   const cdnBase = customCdnDomain || process.env.R2_PUBLIC_URL || "https://img.hanyut.com";
-  return `${cdnBase.replace(/\/$/, '')}/${filename}`;
+  return `${cdnBase.replace(/\/$/, '')}/${finalFilename}`;
 }
 
 export async function pushToAstroLocalPath(
