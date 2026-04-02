@@ -34,15 +34,15 @@ export async function processArticleQueue() {
     const tenant = article.tenant;
 
     // 1. Dapatkan Fakta SERP
-    console.log(`[Queue Cron] Phase 1/3: Scraping SERP for ${article.keyword}`);
-    const facts = await scrapeSerpData(article.keyword);
+    console.log(`[Queue Cron] Phase 1/3: Scraping SERP for ${article.keyword} (${tenant.language}/${tenant.targetCountry})`);
+    const facts = await scrapeSerpData(article.keyword, tenant.language, tenant.targetCountry);
 
     // 2. Buat Logika Outline (Claude)
     console.log(`[Queue Cron] Phase 2/3: Generating Outline with Claude Sonnet 4.6`);
     const outline = await draftWithClaude(
       article.keyword,
       facts,
-      { niche: tenant.niche, toneOfVoice: tenant.toneOfVoice, editorialGuidelines: tenant.editorialGuidelines, articleTypes: tenant.articleTypes }
+      { niche: tenant.niche, toneOfVoice: tenant.toneOfVoice, editorialGuidelines: tenant.editorialGuidelines, articleTypes: tenant.articleTypes, language: tenant.language, targetCountry: tenant.targetCountry }
     );
 
     // 3. Tulis Teks Utuh Markdown (Gemini)
@@ -50,7 +50,7 @@ export async function processArticleQueue() {
     const mdxContent = await expandWithGemini(
       article.keyword, 
       outline,
-      { writingExample: tenant.writingExample, toneOfVoice: tenant.toneOfVoice, tenantId: tenant.id }
+      { writingExample: tenant.writingExample, toneOfVoice: tenant.toneOfVoice, tenantId: tenant.id, language: tenant.language }
     );
 
     // 4. Update Database (simpan outline JSON agar category bisa dipakai saat export .mdx)

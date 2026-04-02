@@ -65,6 +65,25 @@ export function AddTenantDialog() {
               <Input id="localPath" name="localPath" className="col-span-3" placeholder="/mnt/hanyut-posts" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="language" className="text-right">Bahasa Artikel</Label>
+              <select id="language" name="language" className="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
+                <option value="id">🇮🇩 Bahasa Indonesia</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="ms">🇲🇾 Bahasa Melayu</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="targetCountry" className="text-right">Negara Target</Label>
+              <select id="targetCountry" name="targetCountry" className="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
+                <option value="ID">🇮🇩 Indonesia</option>
+                <option value="US">🇺🇸 United States</option>
+                <option value="MY">🇲🇾 Malaysia</option>
+                <option value="SG">🇸🇬 Singapore</option>
+                <option value="AU">🇦🇺 Australia</option>
+                <option value="GB">🇬🇧 United Kingdom</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="telegramTopicId" className="text-right">Telegram Topic ID</Label>
               <Input id="telegramTopicId" name="telegramTopicId" className="col-span-3" placeholder="e.g. 2" />
             </div>

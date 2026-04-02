@@ -15,6 +15,8 @@ export async function addTenantAction(formData: FormData) {
 
   const articleTypes = formData.get("articleTypes") as string;
   const localPath = formData.get("localPath") as string;
+  const language = formData.get("language") as string;
+  const targetCountry = formData.get("targetCountry") as string;
 
   if (!name || !niche) {
     throw new Error("Name and Niche are required.");
@@ -26,6 +28,8 @@ export async function addTenantAction(formData: FormData) {
       niche,
       articleTypes: articleTypes || "General",
       localPath: localPath || null,
+      language: language || "id",
+      targetCountry: targetCountry || "ID",
       toneOfVoice: toneOfVoice || null,
       targetAudience: targetAudience || null,
       editorialGuidelines: editorialGuidelines || null,

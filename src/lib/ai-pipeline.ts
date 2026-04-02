@@ -39,16 +39,22 @@ export async function draftWithClaude(
     niche: string, 
     toneOfVoice?: string|null, 
     editorialGuidelines?: string|null, 
-    articleTypes?: string|null 
+    articleTypes?: string|null,
+    language?: string,
+    targetCountry?: string
   }
 ) {
   const categories = tenantConfig.articleTypes || "General";
+  const lang = tenantConfig.language === "en" ? "English" : "Bahasa Indonesia";
+  const country = tenantConfig.targetCountry || "ID";
 
   const systemPrompt = `
-Kamu adalah Chief Editor untuk situs publishing tier-1 Indonesia dengan jutaan session/bulan.
+Kamu adalah Chief Editor untuk situs publishing tier-1 dengan jutaan session/bulan.
 Niche: ${tenantConfig.niche}
 Tone: ${tenantConfig.toneOfVoice || "Profesional, mendalam, namun mudah dicerna"}
 Editorial Guidelines: ${tenantConfig.editorialGuidelines || "Tulis secara netral dan data-driven."}
+Bahasa output: ${lang}
+Negara target: ${country}
 
 Kategori tersedia: [${categories}]
 Pilih TEPAT SATU kategori dari list di atas.
@@ -66,7 +72,7 @@ INSTRUKSI:
 5. Estimasikan minimal 200 kata per section (total target: 2500+ kata)
 6. Buat 5 FAQ items berdasarkan "People Also Ask" jika tersedia di data SERP
 7. JANGAN pernah mengarang data — hanya gunakan fakta dari referensi SERP di atas
-8. Tulis outline dalam perspective Bahasa Indonesia
+7. Tulis outline dalam ${lang}
   `;
 
   const { object } = await generateObject({
@@ -84,8 +90,9 @@ INSTRUKSI:
 export async function expandWithGemini(
   keyword: string,
   outline: { seoTitle: string, sections: any[], faqItems?: any[] },
-  tenantConfig: { writingExample?: string|null, toneOfVoice?: string|null, tenantId?: string }
+  tenantConfig: { writingExample?: string|null, toneOfVoice?: string|null, tenantId?: string, language?: string }
 ) {
+  const lang = tenantConfig.language === "en" ? "English" : "Bahasa Indonesia";
   
   // === Internal Linking: Ambil artikel PUBLISHED dari tenant yang sama ===
   let internalLinksInstruction = "";
@@ -148,15 +155,16 @@ ${outline.faqItems.map((faq: any, i: number) =>
   }
 
   const prompt = `
-Kamu adalah copywriter profesional tier-1 Indonesia. 
+Kamu adalah copywriter profesional tier-1. 
 Topik: ${keyword}
 Tone: ${tenantConfig.toneOfVoice || "Kasual namun otoritatif, seperti editor majalah premium"}
+Bahasa: ${lang}
 
 ${injection}
 
 ${internalLinksInstruction}
 
-Tulis artikel LENGKAP berdasarkan outline berikut. Target: **2500+ kata**.
+Tulis artikel LENGKAP dalam ${lang} berdasarkan outline berikut. Target: **2500+ kata**.
 Gunakan Markdown. Setiap section MINIMAL 200 kata.
 
 JUDUL: ${outline.seoTitle}

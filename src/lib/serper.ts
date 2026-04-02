@@ -6,7 +6,7 @@ const JINA_READER_BASE = "https://r.jina.ai/";
  * Scrape SERP data + deep content dari halaman kompetitor.
  * Flow: Serper.dev → URL teratas → Jina.ai Reader → Full markdown content
  */
-export async function scrapeSerpData(keyword: string): Promise<string[]> {
+export async function scrapeSerpData(keyword: string, language: string = "id", targetCountry: string = "ID"): Promise<string[]> {
   if (!process.env.SERPER_API_KEY) {
     console.warn("[Serper] API key missing, using mock data");
     return ["Mock fact 1: This is placeholder data for development.", "Mock fact 2: Replace with real SERP data."];
@@ -16,7 +16,7 @@ export async function scrapeSerpData(keyword: string): Promise<string[]> {
     // Step 1: Ambil 10 hasil teratas dari Google via Serper
     const serpRes = await axios.post(
       "https://google.serper.dev/search",
-      { q: keyword, gl: "id", hl: "id", num: 10 },
+      { q: keyword, gl: targetCountry.toLowerCase(), hl: language, num: 10 },
       { headers: { "X-API-KEY": process.env.SERPER_API_KEY, "Content-Type": "application/json" } }
     );
 
