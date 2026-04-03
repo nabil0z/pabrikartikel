@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Sparkles, Wand2, Check, X, CheckCheck } from "lucide-react";
+import { Calendar as CalendarIcon, Wand2, Check, X, CheckCheck } from "lucide-react";
 import { generateSeasonalPlan, approveKeyword, rejectKeyword, approveAllKeywords } from "./actions";
+import { GenerateButton } from "@/components/calendar/GenerateButton";
 
 interface TenantBasic {
   id: string;
@@ -84,10 +85,7 @@ export default async function CalendarPage() {
                 <p className="text-xs text-muted-foreground">
                   AI akan cek hari besar, tren musiman, dan peluang konten sesuai niche yang dipilih.
                 </p>
-                <Button type="submit" className="w-full">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Rencana 1 Tahun
-                </Button>
+                <GenerateButton />
               </form>
             </CardContent>
           </Card>
