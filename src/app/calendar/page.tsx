@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Wand2, Check, X, CheckCheck } from "lucide-react";
+import { Calendar as CalendarIcon, Wand2 } from "lucide-react";
 import { generateSeasonalPlan, approveKeyword, rejectKeyword, approveAllKeywords } from "./actions";
 import { GenerateButton } from "@/components/calendar/GenerateButton";
+import { ApproveAllButton, ApproveButton, RejectButton } from "@/components/calendar/ActionButtons";
 
 interface TenantBasic {
   id: string;
@@ -107,8 +108,8 @@ export default async function CalendarPage() {
           </Card>
         </div>
         
-        {/* Event List with Keywords */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Event List with Keywords (Scrollable) */}
+        <div className="lg:col-span-2 space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 pb-10">
           {events.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
@@ -142,10 +143,7 @@ export default async function CalendarPage() {
                             <input type="hidden" name="eventId" value={ev.id} />
                             <input type="hidden" name="tenantId" value={ev.tenantId} />
                             <input type="hidden" name="targetDate" value={ev.targetGenDate.toISOString()} />
-                            <Button type="submit" size="sm" variant="default">
-                              <CheckCheck className="h-3 w-3 mr-1" />
-                              Approve Semua
-                            </Button>
+                            <ApproveAllButton />
                           </form>
                         )}
                       </div>
@@ -167,16 +165,12 @@ export default async function CalendarPage() {
                                 <input type="hidden" name="keyword" value={keyword} />
                                 <input type="hidden" name="tenantId" value={ev.tenantId} />
                                 <input type="hidden" name="targetDate" value={ev.targetGenDate.toISOString()} />
-                                <Button type="submit" size="sm" variant="ghost" className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50">
-                                  <Check className="h-4 w-4" />
-                                </Button>
+                                <ApproveButton />
                               </form>
                               <form action={rejectKeyword}>
                                 <input type="hidden" name="eventId" value={ev.id} />
                                 <input type="hidden" name="keyword" value={keyword} />
-                                <Button type="submit" size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50">
-                                  <X className="h-4 w-4" />
-                                </Button>
+                                <RejectButton />
                               </form>
                             </div>
                           </div>
