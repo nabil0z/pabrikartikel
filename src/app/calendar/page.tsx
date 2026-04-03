@@ -38,6 +38,8 @@ function parseKeywords(keywordsJson: string | null): { relevance?: string; sugge
   try { return JSON.parse(keywordsJson); } catch { return {}; }
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function CalendarPage() {
   const events: SeasonalEventWithTenant[] = await prisma.seasonalEvent.findMany({
     orderBy: { eventDate: "asc" },
