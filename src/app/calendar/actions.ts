@@ -38,11 +38,15 @@ Negara target: ${tenant.targetCountry === "ID" ? "Indonesia" : tenant.targetCoun
 
 TUGAS: Buat rencana konten seasonal untuk 12 bulan ke depan (${now.toISOString().split("T")[0]} s/d ${oneYearLater.toISOString().split("T")[0]}).
 
-ATURAN:
-1. Identifikasi hari besar nasional/internasional yang relevan dengan niche "${tenant.niche}"
-2. Identifikasi tren musiman (musim hujan, back-to-school, libur sekolah, THR, dsb)
+ATURAN (DILARANG HANYA BERFOKUS PADA TANGGAL MERAH!):
+1. JANGAN hanya mencari hari libur nasional atau kalender pemerintah. Itu membosankan. 
+2. Petakan SIKLUS PERILAKU KONSUMEN & EVENT INDUSTRI spesifik untuk niche "${tenant.niche}". Contoh siklus:
+   - Siklus finansial (Tanggal gajian, bagi dividen, lapor pajak Maret, THR).
+   - Siklus musim (Pancaroba, puncak musim hujan, kemarau panjang).
+   - Siklus sosial/tahunan (Anak masuk sekolah, musim wisuda, musim nikah, libur semester).
+   - Event Industri (Pameran gadget global tiap September, pameran otomotif tiap Agustus, dll).
 3. Untuk setiap event, sertakan HANYA 1 atau maksimal 2 ide keyword/judul artikel. FOKUS PADA KUALITAS (search volume / tren tinggi). Jangan beri ide receh.
-4. Hasilkan 12-24 event paling realistis dan berbobot.
+4. Hasilkan 12-24 event yang "out-of-the-box" dan berbobot.
 5. Tanggal harus akurat (cek kalender Indonesia)
 6. Bahasa Indonesia
 7. Jangan masukkan event yang sudah lewat
