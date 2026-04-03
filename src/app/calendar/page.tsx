@@ -109,7 +109,7 @@ export default async function CalendarPage() {
         </div>
         
         {/* Event List with Keywords (Scrollable) */}
-        <div className="lg:col-span-2 space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 pb-10">
+        <div className="lg:col-span-2 space-y-4 pb-10">
           {events.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
