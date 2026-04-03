@@ -169,11 +169,18 @@ ${tenantConfig.writingExample}
     faqInstruction = `
 
 BAGIAN FAQ (WAJIB ada di akhir artikel sebelum kesimpulan):
-Buat section "## Pertanyaan yang Sering Diajukan" dengan format:
+Buat section "## Pertanyaan yang Sering Diajukan" lalu gunakan komponen <FAQSection>.
+JANGAN gunakan H3 (###) untuk masing-masing soal.
 
-${outline.faqItems.map((faq: any, i: number) => 
-  `### ${faq.question}\n(Ekspansi jawaban ini menjadi 2-3 paragraf detail: ${faq.answerBrief})`
-).join('\n\n')}
+Format Wajib:
+<FAQSection faqs={[
+${outline.faqItems?.map((faq: any, i: number) => 
+  `  {
+    question: "${faq.question}",
+    answer: "Ekspansi jawaban singkat ini menjadi 1-2 paragraf yang komprehensif dan natural: ${faq.answerBrief.replace(/"/g, '\\"')}"
+  }${i < (outline.faqItems?.length || 0) - 1 ? ',' : ''}`
+).join('\n')}
+]} />
 `;
   }
 
@@ -198,15 +205,16 @@ ${JSON.stringify(outline.sections, null, 2)}
 ${faqInstruction}
 
 ATURAN PENULISAN:
-1. Mulai langsung dengan paragraf pembuka yang memikat (JANGAN tulis judul H1, sudah disisipkan otomatis)
-2. Gunakan data spesifik dari instruksi outline (angka, nama, tahun)
-3. Setiap H2 harus punya minimal 3 paragraf substantif
-4. Gunakan bold (**) untuk emphasis poin penting
-5. Sisipkan bullet points atau numbered list di minimal 2 section
-6. Akhiri dengan section "## Kesimpulan" yang ringkas dan actionable
-7. JANGAN gunakan frasa AI: "di era digital ini", "tidak bisa dipungkiri", "perlu diketahui bahwa"
-8. Tulis seolah kamu adalah pakar yang berbicara langsung ke pembaca
-9. Pastikan paragraf pertama LANGSUNG relevan dengan keyword (untuk Google snippet)
+1. Mulai langsung dengan dua baris import ini di urutan paling atas artikel: 
+import ProductCard from '../../components/ProductCard.astro';
+import FAQSection from '../../components/FAQSection.astro';
+2. Lanjutkan dengan paragraf pembuka yang memikat (JANGAN tulis judul H1, sudah disisipkan otomatis). Pastikan paragraf pertama LANGSUNG relevan dengan keyword.
+3. Saat membuat artikel rekomendasi produk, WAJIB gunakan komponen <ProductCard title="..." badge="..." price="..." specs={["...", "..."]}>[Deskripsi mendalam]</ProductCard> untuk setiap item rekomendasi (JANGAN pakai bold list/H3).
+4. Gunakan data spesifik dari instruksi outline (angka, nama, tahun).
+5. Setiap H2 harus punya minimal 2-3 paragraf substantif jika bukan daftar produk.
+6. Akhiri dengan section "## Kesimpulan" yang ringkas dan actionable.
+7. JANGAN gunakan frasa AI kaku: "di era digital ini", "tidak bisa dipungkiri", "penting untuk diingat". Tulis seolah kamu adalah pakar yang berbicara santai tapi ahli ke pembaca.
+8. Gunakan bold (**) untuk emphasis poin penting dalam paragraf.
 
 Tulis artikel lengkap sekarang. Hanya return Markdown.
   `;
