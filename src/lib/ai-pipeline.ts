@@ -22,7 +22,7 @@ const outlineSchema = z.object({
   sections: z.array(z.object({
     heading: z.string().describe("Judul H2 bergaya natural, hindari pola 'Apa itu X', gunakan variasi menarik"),
     instructions: z.string().describe("Instruksi detail: poin utama, data/statistik yang harus disertakan, angle unik"),
-    estimatedWords: z.number().describe("Estimasi jumlah kata ideal untuk section ini (minimal 200)"),
+    estimatedWords: z.number().describe("Estimasi jumlah kata ideal untuk section ini (sesuaikan secara dinamis berdasar kompleksitas materi, bisa 50-300 kata)"),
   })),
   faqItems: z.array(z.object({
     question: z.string().describe("Pertanyaan FAQ berbasis People Also Ask data"),
@@ -68,9 +68,9 @@ ${serpFacts.join('\n\n')}
 INSTRUKSI:
 1. Buat judul SEO yang memikat (50-60 karakter, keyword di awal)
 2. Buat meta description yang memicu klik (150-160 karakter)
-3. Buat 5-8 section H2 dengan instruksi DETAIL per section
+3. Buat jumlah section H2 secara dinamis (3-8 sections) tergantung seberapa luas materi yang diulas.
 4. Setiap section harus mengandung DATA SPESIFIK dari SERP (angka, nama produk, statistik real)
-5. Estimasikan minimal 200 kata per section (total target: 2500+ kata)
+5. Jangan paksakan artikel menjadi panjang jika topiknya sempit/sederhana. Beri estimasi kata yang padat, ringkas, dan "no fluff".
 6. Buat 5 FAQ items berdasarkan "People Also Ask" jika tersedia di data SERP
 7. JANGAN pernah mengarang data — hanya gunakan fakta dari referensi SERP di atas
 7. Tulis outline dalam ${lang}
@@ -194,8 +194,9 @@ ${injection}
 
 ${internalLinksInstruction}
 
-Tulis artikel LENGKAP dalam ${lang} berdasarkan outline berikut. Target: **2500+ kata**.
-Gunakan Markdown. Setiap section MINIMAL 200 kata.
+Tulis artikel LENGKAP dalam ${lang} berdasarkan outline berikut. 
+Panjang artikel HARUS DINAMIS menyesuaikan kedalaman teks dari outline (bisa 800 kata jika materinya sempit, atau 2000+ kata jika mendalam dan luas). 
+Gunakan Markdown. Tulis dengan ringkas, padat (no fluff), jangan menggunakan kalimat bertele-tele sekadar untuk memanjangkan teks.
 
 JUDUL: ${outline.seoTitle}
 
@@ -211,7 +212,7 @@ import FAQSection from '../../components/FAQSection.astro';
 2. Lanjutkan dengan paragraf pembuka yang memikat (JANGAN tulis judul H1, sudah disisipkan otomatis). Pastikan paragraf pertama LANGSUNG relevan dengan keyword.
 3. Saat membuat artikel rekomendasi produk, WAJIB gunakan komponen <ProductCard title="..." badge="..." price="..." specs={["...", "..."]}>[Deskripsi mendalam]</ProductCard> untuk setiap item rekomendasi (JANGAN pakai bold list/H3).
 4. Gunakan data spesifik dari instruksi outline (angka, nama, tahun).
-5. Setiap H2 harus punya minimal 2-3 paragraf substantif jika bukan daftar produk.
+5. Tulis paragraf dengan padat dan to the point. Jika section hanya butuh penjelasan singkat, jangan dipaksa panjang.
 6. Akhiri dengan section "## Kesimpulan" yang ringkas dan actionable.
 7. JANGAN gunakan frasa AI kaku: "di era digital ini", "tidak bisa dipungkiri", "penting untuk diingat". Tulis seolah kamu adalah pakar yang berbicara santai tapi ahli ke pembaca.
 8. Gunakan bold (**) untuk emphasis poin penting dalam paragraf.
