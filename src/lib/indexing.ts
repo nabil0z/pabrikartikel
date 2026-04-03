@@ -39,6 +39,8 @@ async function getAccessToken(): Promise<string | null> {
     const { default: jwt } = await import("jsonwebtoken");
     const now = Math.floor(Date.now() / 1000);
 
+    const privateKey = keyData.private_key.replace(/\\n/g, '\n');
+
     const token = jwt.sign(
       {
         iss: keyData.client_email,
@@ -47,7 +49,7 @@ async function getAccessToken(): Promise<string | null> {
         iat: now,
         exp: now + 3600,
       },
-      keyData.private_key,
+      privateKey,
       { algorithm: "RS256" }
     );
 
