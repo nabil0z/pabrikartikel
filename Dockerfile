@@ -49,6 +49,7 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=builder /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
 COPY --from=builder /app/node_modules/google-trends-api ./node_modules/google-trends-api
@@ -57,7 +58,7 @@ COPY --from=builder /app/node_modules/google-trends-api ./node_modules/google-tr
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 # Auto-migrate database on startup then start server
-RUN printf '#!/bin/sh\nnpx prisma db push --skip-generate\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
+RUN printf '#!/bin/sh\nnode ./node_modules/prisma/build/index.js db push --skip-generate 2>&1 || echo "DB push warning (non-fatal)"\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
 
 USER nextjs
 
