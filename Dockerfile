@@ -34,10 +34,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
 # Copy standalone build output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
@@ -46,22 +42,17 @@ COPY --from=builder /app/init-db.js ./init-db.js
 
 # Copy Prisma schema + generated client for runtime
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=builder /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
 COPY --from=builder /app/node_modules/google-trends-api ./node_modules/google-trends-api
 
-# Ensure data directory is writable
-RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+# Ensure data directory exists
+RUN mkdir -p /app/data
 
 # Auto-init database on startup then start server
 RUN printf '#!/bin/sh\nnode init-db.js\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
-
-USER nextjs
 
 # Port configurable via env, default 7171
 EXPOSE 7171
