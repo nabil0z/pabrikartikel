@@ -102,9 +102,11 @@ export async function expandWithGemini(
       const publishedArticles = await prisma.article.findMany({
         where: { 
           tenantId: tenantConfig.tenantId, 
-          status: "PUBLISHED",
+          status: { in: ["PUBLISHED", "APPROVED", "SCHEDULED"] },
         },
         select: { title: true, keyword: true },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
       });
 
       if (publishedArticles.length > 0) {
@@ -143,6 +145,19 @@ Prioritaskan artikel dengan relevansi tertinggi.
 
 Artikel yang tersedia untuk di-link (diurutkan dari paling relevan):
 ${linkList}
+`;
+        } else if (publishedArticles.length > 0) {
+          // Fallback: Cross-linking ke artikel terbaru jika tidak ada keyword yang nyambung
+          const fallbackLinks = publishedArticles.slice(0, 3).map(a => {
+            const slug = (a.title || a.keyword).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+            return `- [${a.title || a.keyword}](/${slug})`;
+          }).join("\n");
+          
+          internalLinksInstruction = `
+INTERNAL LINKING (REKOMENDASI LINTAS TOPIK):
+Sisipkan rekomendasi bacaan ini di bagian bawah artikel (sebelum Kesimpulan). Gunakan format:
+**Baca juga yang tak kalah menarik:**
+${fallbackLinks}
 `;
         }
       }
@@ -205,16 +220,16 @@ ${JSON.stringify(outline.sections, null, 2)}
 
 ${faqInstruction}
 
-ATURAN PENULISAN:
+ATURAN PENULISAN (UX & SEO MASTERPIECE):
 1. Mulai langsung dengan dua baris import ini di urutan paling atas artikel: 
 import ProductCard from '../../components/ProductCard.astro';
 import FAQSection from '../../components/FAQSection.astro';
-2. Lanjutkan dengan paragraf pembuka yang memikat (JANGAN tulis judul H1, sudah disisipkan otomatis). Pastikan paragraf pertama LANGSUNG relevan dengan keyword.
-3. Saat membuat artikel rekomendasi produk, WAJIB gunakan komponen <ProductCard title="..." badge="..." price="..." specs={["...", "..."]}>[Deskripsi mendalam]</ProductCard> untuk setiap item rekomendasi (JANGAN pakai bold list/H3).
-4. Gunakan data spesifik dari instruksi outline (angka, nama, tahun).
-5. Tulis paragraf dengan padat dan to the point. Jika section hanya butuh penjelasan singkat, jangan dipaksa panjang.
-6. Akhiri dengan section "## Kesimpulan" yang ringkas dan actionable.
-7. JANGAN gunakan frasa AI kaku: "di era digital ini", "tidak bisa dipungkiri", "penting untuk diingat". Tulis seolah kamu adalah pakar yang berbicara santai tapi ahli ke pembaca.
+2. Paragraf Pembuka & TL;DR: Buat 1 paragraf intro yang memikat, LALU WAJIB ikuti dengan daftar ringkas (TL;DR / Poin Utama) menggunakan bullet points agar pembaca cepat paham inti artikel.
+3. Gunakan komponen <ProductCard title="..." badge="..." price="..." specs={["...", "..."]}>[Deskripsi mendalam]</ProductCard> KHUSUS hanya untuk merekomendasikan produk fisik/aplikasi definitif.
+4. Tabel Komparasi: JIKA membandingkan 2 produk/konsep atau lebih, WAJIB buat Markdown Table yang rapi untuk memecah kebuntuan visual teks.
+5. Elemen Visual: Gunakan format Blockquote (\`> Tips:\` atau \`> Catatan Penting:\`) untuk menyorot insight berharga agar mata pembaca rileks.
+6. Akhiri dengan section "## Kesimpulan" yang actionable.
+7. JANGAN gunakan frasa AI kaku: "di era digital ini", "tidak bisa dipungkiri", "penting untuk diingat". Tulis seolah kamu adalah pakar asli.
 8. Gunakan bold (**) untuk emphasis poin penting dalam paragraf.
 
 Tulis artikel lengkap sekarang. Hanya return Markdown.
