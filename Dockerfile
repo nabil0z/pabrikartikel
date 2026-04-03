@@ -42,6 +42,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/init-db.js ./init-db.js
 
 # Copy Prisma schema + generated client for runtime
 COPY --from=builder /app/prisma ./prisma
@@ -57,8 +58,8 @@ COPY --from=builder /app/node_modules/google-trends-api ./node_modules/google-tr
 # Ensure data directory is writable
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
-# Auto-migrate database on startup then start server
-RUN printf '#!/bin/sh\nnode ./node_modules/prisma/build/index.js db push --skip-generate 2>&1 || echo "DB push warning (non-fatal)"\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
+# Auto-init database on startup then start server
+RUN printf '#!/bin/sh\nnode init-db.js\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
 
 USER nextjs
 
