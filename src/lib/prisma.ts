@@ -16,7 +16,7 @@ function createPrismaClient() {
   } else {
     // Relative path (file:./dev.db) -> resolve to absolute
     const relativePath = envUrl.replace("file:", "");
-    const absolutePath = path.resolve(process.cwd(), relativePath);
+    const absolutePath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), relativePath);
     dbUrl = `file:${absolutePath}`;
   }
 
