@@ -14,7 +14,7 @@ const seasonalPlanSchema = z.object({
     eventName: z.string().describe("Nama event/hari besar/tren musiman dalam Bahasa Indonesia"),
     eventDate: z.string().describe("Tanggal puncak event (format: YYYY-MM-DD)"),
     relevance: z.string().describe("Penjelasan 1 kalimat relevansi event ini dengan niche blog"),
-    suggestedKeywords: z.array(z.string()).describe("3-5 ide judul/keyword artikel yang bisa dibuat untuk event ini"),
+    suggestedKeywords: z.array(z.string()).describe("Hanya 1-2 ide judul/keyword TERBAIK dengan search intent tertinggi untuk event ini. Kualitas > Kuantitas."),
   }))
 });
 
@@ -41,15 +41,15 @@ TUGAS: Buat rencana konten seasonal untuk 12 bulan ke depan (${now.toISOString()
 ATURAN:
 1. Identifikasi hari besar nasional/internasional yang relevan dengan niche "${tenant.niche}"
 2. Identifikasi tren musiman (musim hujan, back-to-school, libur sekolah, THR, dsb)
-3. Untuk setiap event, sertakan 3-5 ide keyword/judul artikel yang actionable
-4. Hasilkan 15-30 event realistis
+3. Untuk setiap event, sertakan HANYA 1 atau maksimal 2 ide keyword/judul artikel. FOKUS PADA KUALITAS (search volume / tren tinggi). Jangan beri ide receh.
+4. Hasilkan 12-24 event paling realistis dan berbobot.
 5. Tanggal harus akurat (cek kalender Indonesia)
 6. Bahasa Indonesia
 7. Jangan masukkan event yang sudah lewat
 
 Contoh output yang bagus:
-- Event: "Harbolnas 12.12" → keywords: ["Tips Hemat Harbolnas 2026", "Rekomendasi Gadget Diskon 12.12", "Cara Cek Flash Sale Asli atau Palsu"]
-- Event: "Hari Kesehatan Dunia" → keywords: ["Tren Kesehatan Digital 2026", "Alat Kesehatan Rumah Terbaik"]
+- Event: "Harbolnas 12.12" → keywords: ["Rekomendasi Gadget Diskon 12.12"]
+- Event: "Hari Kesehatan Dunia" → keywords: ["Alat Kesehatan Rumah Terbaik 2026", "Tren Telemedicine di Indonesia"]
 `;
 
   const { object } = await generateObject({
