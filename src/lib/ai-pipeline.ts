@@ -225,5 +225,13 @@ Tulis artikel lengkap sekarang. Hanya return Markdown.
     maxOutputTokens: 8000, // ~3000-4000 kata
   });
 
-  return `# ${outline.seoTitle}\n\n${text}`;
+  // Bersihkan teks dari judul H1 ganda (# Judul) jika Gemini membandel menambahkannya di awal/tengah
+  let cleanText = text;
+  
+  // Karena Gemini sering menuliskan import di baris pertama, H1 bisa muncul di baris ke-3
+  // Regex /m (multiline) ensures kita mencari `# ` di awal baris manapun, 
+  // lalu menggantinya dengan newline kosong.
+  cleanText = cleanText.replace(/^#\s+[^\n]+$/gm, '');
+
+  return cleanText;
 }
