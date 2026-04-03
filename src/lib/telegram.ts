@@ -157,7 +157,7 @@ export async function handleTelegramReply(msg: TelegramBot.Message) {
       // 3. Auto-submit ke Google Indexing API
       const articleUrl = buildArticleUrl(article.tenant.name, title);
       const indexResult = await submitUrlForIndexing(articleUrl);
-      const indexStatus = indexResult.success ? "✅ Google Indexing: Submitted" : "⚠️ Indexing: Skip (no credentials)";
+      const indexStatus = indexResult.success ? "✅ Google Indexing: Submitted" : `⚠️ Indexing Failed: ${indexResult.message}`;
 
       bot.sendMessage(msg.chat.id, `🎉 <b>PUBLISHED!</b> Artikel telah dikirim ke web.\n${indexStatus}`, { 
         parse_mode: "HTML",
