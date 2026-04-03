@@ -129,7 +129,7 @@ export async function handleTelegramReply(msg: TelegramBot.Message) {
         const description = metaDescription || article.content.substring(0, 150).replace(/"/g, '\\"').replace(/\n/g, ' ').replace(/#/g, '').trim() + "...";
         const authorName = typeof article.tenant.authorName === 'string' ? article.tenant.authorName : "Redaksi";
         
-        const frontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ndescription: "${description}"\nheroImage: "${imageUrl}"\npubDate: ${today}\nupdatedDate: ${today}\ncategory: "${category}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ntags: ["${category.toLowerCase()}", "${slug.split("-").slice(0, 2).join('", "')}"]\n---\n\n`;
+        const frontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ndescription: "${description}"\nimage: "${imageUrl}"\npubDate: ${today}\nupdatedDate: ${today}\ncategory: "${category}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ntags: ["${category.toLowerCase()}", "${slug.split("-").slice(0, 2).join('", "')}"]\n---\n\n`;
         const fullContent = frontmatter + article.content;
         
         const ghResult = await pushToGitHub(

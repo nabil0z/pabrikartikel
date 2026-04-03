@@ -81,7 +81,7 @@ export async function pushToAstroLocalPath(
   const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
 description: "${description}"
-heroImage: "${imageUrl}"
+image: "${imageUrl}"
 pubDate: ${today}
 updatedDate: ${today}
 category: "${categoryId}"
