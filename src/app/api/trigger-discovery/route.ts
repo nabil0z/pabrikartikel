@@ -9,7 +9,7 @@ export async function GET() {
   try {
     // Jalankan tanpa harus di-await agar browser tidak timeout 
     // (Google Trends kadang lambat membalas)
-    processAutoDiscovery().catch(e => console.error("Manual Discovery Error:", e));
+    processAutoDiscovery(true).catch(e => console.error("Manual Discovery Error:", e));
     
     return NextResponse.json({
       status: "Berhasil dipancing!",

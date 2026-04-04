@@ -8,10 +8,10 @@ import { checkDuplicateKeyword } from "@/lib/duplicate-guard";
  * yang relevan dengan niche tenant, lalu memasukkannya ke antrean otomatis.
  * 
  * Hanya berjalan untuk tenant yang autoDiscovery = true.
- * Dijalankan oleh cron 1x sehari.
+ * Dijalankan oleh cron 1 jam sekali, diproses hanya jika waktu lokal jam 6 pagi.
  */
-export async function processAutoDiscovery() {
-  console.log(`[Auto-Discovery] Scanning for trending topics...`);
+export async function processAutoDiscovery(force: boolean = false) {
+  console.log(`[Auto-Discovery] Scanning for trending topics... ${force ? '(FORCE TRIGGERED)' : ''}`);
 
   // Ambil semua tenant yang autoDiscovery = true
   const tenants = await prisma.tenant.findMany({
@@ -26,13 +26,32 @@ export async function processAutoDiscovery() {
   // Dynamic import (Google Trends API)
   const googleTrends = await import("google-trends-api");
 
+  const timezoneMap: Record<string, string> = {
+    "ID": "Asia/Jakarta",
+    "US": "America/New_York",
+    "GB": "Europe/London",
+    "SG": "Asia/Singapore",
+    "MY": "Asia/Kuala_Lumpur",
+    "AU": "Australia/Sydney",
+  };
+
   for (const tenant of tenants) {
     try {
-      console.log(`[Auto-Discovery] Processing tenant: ${tenant.name} (niche: ${tenant.niche})`);
-
-      // Cari niche-related keywords dari Google Trends
       const geo = tenant.targetCountry || "ID";
       const hl = tenant.language || "id";
+      const timeZone = timezoneMap[geo] || "UTC";
+
+      // Pengecekan Jam Lokal (Format 24 Jam)
+      const localHourStr = new Date().toLocaleString("en-US", { timeZone, hour: 'numeric', hour12: false });
+      const localHour = parseInt(localHourStr, 10);
+
+      // Guard: Cuma narik trends saat jam 6 pagi waktu setempat (kecuali dipaksa)
+      if (!force && localHour !== 6) {
+        console.log(`[Auto-Discovery] ⏭️ Skip ${tenant.name} (${geo}) — Waktu lokal: ${localHour.toString().padStart(2, '0')}:00 (Target: 06:00)`);
+        continue;
+      }
+
+      console.log(`[Auto-Discovery] Processing tenant: ${tenant.name} (niche: ${tenant.niche}, Waktu Lokal: ${localHour.toString().padStart(2, '0')}:00)`);
 
       // 1. Ambil daily trends untuk negara target
       const dailyTrendsRaw = await googleTrends.dailyTrends({

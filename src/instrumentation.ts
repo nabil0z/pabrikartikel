@@ -27,8 +27,8 @@ export async function register() {
       }
     });
 
-    // Auto-Discovery — setiap hari jam 6 pagi cari keyword trending
-    cron.default.schedule('0 6 * * *', async () => {
+    // Auto-Discovery — setiap jam, namun proses akan dijaga (guarded) oleh waktu lokal tenant.
+    cron.default.schedule('0 * * * *', async () => {
       try {
         await processAutoDiscovery();
       } catch (e: any) {
