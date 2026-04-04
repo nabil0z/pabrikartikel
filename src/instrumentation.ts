@@ -38,8 +38,15 @@ export async function register() {
 
     // Menjalankan Telebot Polling untuk menerima Thumbnail dari Admin
     const bot = getBot();
-    if (bot) {
+    if (bot && !(globalThis as any).__TG_POLLING_STARTED) {
+      (globalThis as any).__TG_POLLING_STARTED = true;
       console.log("[Instrumentation] Starting Telegram Long Polling...");
+      
+      // Error handler untuk menekan pesan log 409 Conflict jika masih ada sisa sesi
+      bot.on("polling_error", (error: any) => {
+        if (error.code !== "ETELEGRAM") console.warn("[Telegram Polling Error]", error.message);
+      });
+
       bot.startPolling();
       
       bot.on("message", async (msg) => {
